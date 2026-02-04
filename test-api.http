@@ -1,0 +1,16 @@
+### Buscar todos os convidados
+GET http://localhost:3000/guests/search
+
+### Buscar convidados por nome
+GET http://localhost:3000/guests/search?name=Silva
+
+### Confirmar presença de convidados
+POST http://localhost:3000/guests/confirm
+Content-Type: application/json
+
+{
+  "guestIds": [1, 2, 3]
+}
+
+### Documentação da API (Swagger)
+GET http://localhost:3000/api
