@@ -10,9 +10,35 @@ async function createApp() {
     app = await NestFactory.create(AppModule);
     
     app.useGlobalPipes(new ValidationPipe());
+    
+    // Configuração mais flexível de CORS
+    const allowedOrigins = [
+      'http://localhost:8080',
+      'http://localhost:3000',
+      'https://casamento-site-gamma.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+
     app.enableCors({
-      origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+      origin: (origin, callback) => {
+        // Permite requisições sem origin (ex: Postman, mobile apps)
+        if (!origin) return callback(null, true);
+        
+        // Verifica se a origin está na lista permitida
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        
+        // Permite qualquer subdomínio do vercel.app
+        if (origin.endsWith('.vercel.app')) {
+          return callback(null, true);
+        }
+        
+        callback(new Error('Not allowed by CORS'));
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     });
 
     const config = new DocumentBuilder()
