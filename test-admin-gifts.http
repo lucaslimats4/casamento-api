@@ -1,0 +1,84 @@
+### Fazer login para obter token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "password": "casamento123"
+}
+
+### Variável para armazenar o token (substitua pelo token obtido no login)
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+### ========== ROTAS ADMINISTRATIVAS DE PRESENTES ==========
+
+### Listar todos os presentes (admin)
+GET http://localhost:3000/gifts/admin
+Authorization: Bearer {{token}}
+
+### Listar presentes ordenados por preço (crescente)
+GET http://localhost:3000/gifts/admin?sortByPrice=asc
+Authorization: Bearer {{token}}
+
+### Listar apenas presentes comprados
+GET http://localhost:3000/gifts/admin?purchased=true
+Authorization: Bearer {{token}}
+
+### Listar apenas presentes disponíveis
+GET http://localhost:3000/gifts/admin?purchased=false
+Authorization: Bearer {{token}}
+
+### Criar novo presente
+POST http://localhost:3000/gifts/admin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Conjunto de Taças de Cristal",
+  "description": "Conjunto com 6 taças de cristal para vinho tinto",
+  "price": 189.90,
+  "image": "https://example.com/tacas.jpg"
+}
+
+### Buscar presente por ID
+GET http://localhost:3000/gifts/admin/1
+Authorization: Bearer {{token}}
+
+### Atualizar presente
+PUT http://localhost:3000/gifts/admin/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Conjunto de Taças de Cristal Premium",
+  "price": 229.90,
+  "purchased": false
+}
+
+### Marcar presente como comprado
+PUT http://localhost:3000/gifts/admin/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "purchased": true
+}
+
+### Deletar presente
+DELETE http://localhost:3000/gifts/admin/1
+Authorization: Bearer {{token}}
+
+### Estatísticas dos presentes
+GET http://localhost:3000/gifts/admin/stats
+Authorization: Bearer {{token}}
+
+### ========== TESTE SEM TOKEN (deve retornar 401) ==========
+
+### Tentar criar presente sem token
+POST http://localhost:3000/gifts/admin
+Content-Type: application/json
+
+{
+  "title": "Teste sem token",
+  "description": "Este deve falhar",
+  "price": 100.00
+}

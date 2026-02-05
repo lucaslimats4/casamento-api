@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { Gift } from './entities/gift.entity';
 import { GiftResponseDto } from './dto/gift-response.dto';
+import { CreateGiftDto } from './dto/create-gift.dto';
+import { UpdateGiftDto } from './dto/update-gift.dto';
 
 @Injectable()
 export class GiftsService {
@@ -124,5 +126,144 @@ export class GiftsService {
       console.error('Erro ao criar checkout do Mercado Pago:', error);
       throw new Error('Erro ao criar checkout. Tente novamente.');
     }
+  }
+
+  async getGiftStats() {
+    const [gifts, total] = await this.giftRepository.findAndCount();
+    
+    const purchased = gifts.filter(gift => gift.purchased).length;
+    const available = total - purchased;
+    
+    const totalValue = gifts.reduce((sum, gift) => sum + Number(gift.price), 0);
+    const purchasedValue = gifts
+      .filter(gift => gift.purchased)
+      .reduce((sum, gift) => sum + Number(gift.price), 0);
+
+    return {
+      total,
+      purchased,
+      available,
+      totalValue,
+      purchasedValue,
+    };
+  }
+
+  // ========== MÉTODOS ADMINISTRATIVOS ==========
+
+  async createGift(createGiftDto: CreateGiftDto): Promise<GiftResponseDto> {
+    const gift = this.giftRepository.create({
+      title: createGiftDto.title,
+      description: createGiftDto.description,
+      price: createGiftDto.price,
+      image: createGiftDto.image,
+      purchased: false,
+    });
+
+    const savedGift = await this.giftRepository.save(gift);
+
+    return {
+      id: savedGift.id,
+      title: savedGift.title,
+      description: savedGift.description,
+      price: Number(savedGift.price),
+      image: savedGift.image,
+      purchased: savedGift.purchased,
+    };
+  }
+
+  async getGiftById(id: number): Promise<GiftResponseDto> {
+    const gift = await this.giftRepository.findOne({ where: { id } });
+
+    if (!gift) {
+      throw new NotFoundException(`Presente com ID ${id} não encontrado`);
+    }
+
+    return {
+      id: gift.id,
+      title: gift.title,
+      description: gift.description,
+      price: Number(gift.price),
+      image: gift.image,
+      purchased: gift.purchased,
+    };
+  }
+
+  async updateGift(id: number, updateGiftDto: UpdateGiftDto): Promise<GiftResponseDto> {
+    const gift = await this.giftRepository.findOne({ where: { id } });
+
+    if (!gift) {
+      throw new NotFoundException(`Presente com ID ${id} não encontrado`);
+    }
+
+    // Atualizar apenas os campos fornecidos
+    if (updateGiftDto.title !== undefined) {
+      gift.title = updateGiftDto.title;
+    }
+    if (updateGiftDto.description !== undefined) {
+      gift.description = updateGiftDto.description;
+    }
+    if (updateGiftDto.price !== undefined) {
+      gift.price = updateGiftDto.price;
+    }
+    if (updateGiftDto.image !== undefined) {
+      gift.image = updateGiftDto.image;
+    }
+    if (updateGiftDto.purchased !== undefined) {
+      gift.purchased = updateGiftDto.purchased;
+    }
+
+    const updatedGift = await this.giftRepository.save(gift);
+
+    return {
+      id: updatedGift.id,
+      title: updatedGift.title,
+      description: updatedGift.description,
+      price: Number(updatedGift.price),
+      image: updatedGift.image,
+      purchased: updatedGift.purchased,
+    };
+  }
+
+  async deleteGift(id: number): Promise<{ message: string; id: number }> {
+    const gift = await this.giftRepository.findOne({ where: { id } });
+
+    if (!gift) {
+      throw new NotFoundException(`Presente com ID ${id} não encontrado`);
+    }
+
+    await this.giftRepository.remove(gift);
+
+    return {
+      message: 'Presente deletado com sucesso',
+      id,
+    };
+  }
+
+  async getGiftsAdmin(sortByPrice?: 'asc' | 'desc', purchased?: boolean): Promise<GiftResponseDto[]> {
+    let query = this.giftRepository.createQueryBuilder('gift');
+
+    // Filtrar por status de compra se especificado
+    if (purchased !== undefined) {
+      query = query.where('gift.purchased = :purchased', { purchased });
+    }
+
+    // Ordenar por preço se especificado
+    if (sortByPrice) {
+      query = query.orderBy('gift.price', sortByPrice.toUpperCase() as 'ASC' | 'DESC');
+    } else {
+      // Ordenação padrão por ID
+      query = query.orderBy('gift.id', 'ASC');
+    }
+
+    const gifts = await query.getMany();
+
+    return gifts.map(gift => ({
+      id: gift.id,
+      title: gift.title,
+      description: gift.description,
+      price: Number(gift.price),
+      image: gift.image,
+      purchased: gift.purchased,
+    }));
   }
 }

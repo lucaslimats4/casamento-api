@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GuestsModule } from './guests/guests.module';
 import { GiftsModule } from './gifts/gifts.module';
+import { AuthModule } from './auth/auth.module';
 import { Guest } from './guests/entities/guest.entity';
 import { GuestGroup } from './guests/entities/guest-group.entity';
 import { Gift } from './gifts/entities/gift.entity';
@@ -29,6 +30,7 @@ import { Gift } from './gifts/entities/gift.entity';
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     GuestsModule,
     GiftsModule,
   ],
