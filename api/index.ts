@@ -16,6 +16,7 @@ async function createApp() {
       'http://localhost:8080',
       'http://localhost:3000',
       'https://casamento-site-gamma.vercel.app',
+      'https://emillyelucas.com',
       process.env.FRONTEND_URL
     ].filter(Boolean);
 
