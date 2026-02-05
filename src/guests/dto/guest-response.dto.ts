@@ -15,6 +15,9 @@ export class GuestResponseDto {
 
   @ApiProperty({ required: false })
   groupId?: number;
+
+  @ApiProperty({ required: false })
+  groupName?: string;
 }
 
 export class GuestGroupResponseDto {

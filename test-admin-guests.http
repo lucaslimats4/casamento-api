@@ -1,0 +1,120 @@
+### Fazer login para obter token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "password": "casamento123"
+}
+
+### Variável para armazenar o token (substitua pelo token obtido no login)
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+### ========== ROTAS ADMINISTRATIVAS DE GRUPOS ==========
+
+### Listar todos os grupos
+GET http://localhost:3000/guests/admin/groups
+Authorization: Bearer {{token}}
+
+### Criar novo grupo
+POST http://localhost:3000/guests/admin/groups
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Família Silva"
+}
+
+### Buscar grupo por ID
+GET http://localhost:3000/guests/admin/groups/1
+Authorization: Bearer {{token}}
+
+### Atualizar grupo
+PUT http://localhost:3000/guests/admin/groups/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Família Silva Santos"
+}
+
+### Deletar grupo
+DELETE http://localhost:3000/guests/admin/groups/1
+Authorization: Bearer {{token}}
+
+### ========== ROTAS ADMINISTRATIVAS DE CONVIDADOS ==========
+
+### Listar todos os convidados
+GET http://localhost:3000/guests/admin
+Authorization: Bearer {{token}}
+
+### Listar convidados confirmados
+GET http://localhost:3000/guests/admin?confirmed=true
+Authorization: Bearer {{token}}
+
+### Listar convidados de um grupo específico
+GET http://localhost:3000/guests/admin?groupId=1
+Authorization: Bearer {{token}}
+
+### Criar novo convidado
+POST http://localhost:3000/guests/admin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "isChild": false,
+  "groupId": 1
+}
+
+### Criar convidado sem grupo
+POST http://localhost:3000/guests/admin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Maria Santos",
+  "isChild": false
+}
+
+### Buscar convidado por ID
+GET http://localhost:3000/guests/admin/1
+Authorization: Bearer {{token}}
+
+### Atualizar convidado
+PUT http://localhost:3000/guests/admin/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "João Silva Santos",
+  "confirmed": true,
+  "isChild": false,
+  "groupId": 2
+}
+
+### Confirmar convidado
+PUT http://localhost:3000/guests/admin/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "confirmed": true
+}
+
+### Deletar convidado
+DELETE http://localhost:3000/guests/admin/1
+Authorization: Bearer {{token}}
+
+### Estatísticas dos convidados
+GET http://localhost:3000/guests/admin/stats
+Authorization: Bearer {{token}}
+
+### ========== TESTE SEM TOKEN (deve retornar 401) ==========
+
+### Tentar criar grupo sem token
+POST http://localhost:3000/guests/admin/groups
+Content-Type: application/json
+
+{
+  "name": "Teste sem token"
+}
