@@ -18,6 +18,15 @@ export class GuestsService {
     private guestGroupRepository: Repository<GuestGroup>,
   ) {}
 
+  private normalizeString(str: string): string {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
   async searchGuests(name?: string): Promise<SearchGuestsResponseDto> {
     if (!name) {
       // Se não há filtro de nome, retorna todos os grupos e convidados individuais
@@ -55,13 +64,19 @@ export class GuestsService {
       };
     }
 
-    // Normalizar o termo de busca: remover espaços extras e trim
-    const normalizedName = name.trim().replace(/\s+/g, ' ');
+    // Normalizar o termo de busca e dividir em palavras
+    const searchWords = this.normalizeString(name).split(' ').filter(word => word.length > 0);
 
-    // Buscar convidados que correspondem ao nome (case insensitive)
-    const matchingGuests = await this.guestRepository.find({
-      where: { name: ILike(`%${normalizedName}%`) },
+    // Buscar todos os convidados
+    const allGuests = await this.guestRepository.find({
       relations: ['group'],
+    });
+
+    // Filtrar convidados que correspondem a qualquer palavra da busca
+    const matchingGuests = allGuests.filter(guest => {
+      const normalizedGuestName = this.normalizeString(guest.name);
+      // Retorna true se qualquer palavra da busca está contida no nome do convidado
+      return searchWords.some(word => normalizedGuestName.includes(word));
     });
 
     // Separar convidados por grupos e individuais
