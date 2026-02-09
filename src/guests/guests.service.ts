@@ -55,9 +55,12 @@ export class GuestsService {
       };
     }
 
+    // Normalizar o termo de busca: remover espaços extras e trim
+    const normalizedName = name.trim().replace(/\s+/g, ' ');
+
     // Buscar convidados que correspondem ao nome (case insensitive)
     const matchingGuests = await this.guestRepository.find({
-      where: { name: ILike(`%${name}%`) },
+      where: { name: ILike(`%${normalizedName}%`) },
       relations: ['group'],
     });
 
